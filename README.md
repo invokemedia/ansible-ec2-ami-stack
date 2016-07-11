@@ -17,7 +17,7 @@ The following currently works:
 * add internet gateway to VPC
 * setup route table for VPC and Gateway
 * setup security group for HTTP, HTTPS, SSH
-* provision EC2 server with Invoke AMI
+* provision EC2 server with [Invoke AMI](https://github.com/invokemedia/settler-ami-provision)
 
 The following _is not_ working:
 
