@@ -62,7 +62,7 @@ Example Playbook
 
 Here is how you would use the default setup setup.
 
-```
+```yaml
 - hosts: localhost
   connection: local
   gather_facts: True
