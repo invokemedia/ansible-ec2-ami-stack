@@ -21,7 +21,7 @@
       Name: "{{ app_name }} Subnet"
   register: vpc_subnet
 
-- name: Create subnet 2 for vpc
+- name: Create DB subnet for vpc
   ec2_vpc_subnet:
     state: present
     profile: "{{ aws_boto_profile }}"
@@ -30,7 +30,7 @@
     region: "{{ aws_region }}"
     az: "{{ aws_region }}b"
     resource_tags:
-      Name: "{{ app_name }} Subnet 2"
+      Name: "{{ app_name }} DB Subnet"
   register: vpc_subnet2
 
 - name: register internet gateway
