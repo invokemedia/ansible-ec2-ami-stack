@@ -3,7 +3,7 @@
   ec2_vpc:
     state: present
     profile: "{{ aws_boto_profile }}"
-    cidr_block: 172.23.0.0/16
+    cidr_block: 10.0.0.0/16
     resource_tags:
       Name: "{{ app_name }} VPC"
     region: "{{ aws_region }}"
@@ -14,11 +14,24 @@
     state: present
     profile: "{{ aws_boto_profile }}"
     vpc_id: "{{ vpc.vpc_id }}"
-    cidr: 172.23.0.0/16
+    cidr: 10.0.1.0/24
     region: "{{ aws_region }}"
+    az: "{{ aws_region }}a"
     resource_tags:
       Name: "{{ app_name }} Subnet"
   register: vpc_subnet
+
+- name: Create subnet 2 for vpc
+  ec2_vpc_subnet:
+    state: present
+    profile: "{{ aws_boto_profile }}"
+    vpc_id: "{{ vpc.vpc_id }}"
+    cidr: 10.0.11.0/24
+    region: "{{ aws_region }}"
+    az: "{{ aws_region }}b"
+    resource_tags:
+      Name: "{{ app_name }} Subnet 2"
+  register: vpc_subnet2
 
 - name: register internet gateway
   ec2_vpc_igw:
@@ -38,6 +51,7 @@
       Name: "{{ app_name }} Router"
     subnets:
       - "{{ vpc_subnet.subnet.id }}"
+      - "{{ vpc_subnet2.subnet.id }}"
     routes:
       - dest: 0.0.0.0/0
         gateway_id: "{{ internet_gateway.gateway_id }}"
@@ -120,7 +134,6 @@
 
 - name: tag the volumes
   ec2_tag:
-    state: present
     resource: "{{ item.id }}"
     region:  "{{ aws_region }}"
     tags:
