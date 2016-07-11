@@ -1,0 +1,8 @@
+---
+  vpc_vpc_id: "{{ vpc.vpc_id }}"
+  vpc_subnet_subnet_id: "{{ vpc_subnet.subnet.id }}"
+  internet_gateway_gateway_id: "{{ internet_gateway.gateway_id }}"
+  security_group_group_id: "{{ security_group.group_id }}"
+  ec2_instance_id: "{{ ec2.instances[0].id }}"
+  ec2_public_ip: "{{ ec2.instances[0].public_ip }}"
+  ec2_public_dns_name: "{{ ec2.instances[0].public_dns_name }}"

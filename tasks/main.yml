@@ -1,0 +1,176 @@
+---
+- name: create vpc entry
+  ec2_vpc:
+    state: present
+    profile: "{{ aws_boto_profile }}"
+    cidr_block: 172.23.0.0/16
+    resource_tags:
+      Name: "{{ app_name }} VPC"
+    region: "{{ aws_region }}"
+  register: vpc
+
+- name: Create subnet for vpc
+  ec2_vpc_subnet:
+    state: present
+    profile: "{{ aws_boto_profile }}"
+    vpc_id: "{{ vpc.vpc_id }}"
+    cidr: 172.23.0.0/16
+    region: "{{ aws_region }}"
+    resource_tags:
+      Name: "{{ app_name }} Subnet"
+  register: vpc_subnet
+
+- name: register internet gateway
+  ec2_vpc_igw:
+    state: present
+    profile: "{{ aws_boto_profile }}"
+    region: "{{ aws_region }}"
+    vpc_id: "{{ vpc.vpc_id }}"
+  register: internet_gateway
+
+- name: Set up public subnet route table
+  ec2_vpc_route_table:
+    state: present
+    profile: "{{ aws_boto_profile }}"
+    vpc_id: "{{ vpc.vpc_id }}"
+    region: "{{ aws_region }}"
+    tags:
+      Name: "{{ app_name }} Router"
+    subnets:
+      - "{{ vpc_subnet.subnet.id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ internet_gateway.gateway_id }}"
+    propagating_vgw_ids: []
+  register: public_route_table
+
+- name: setup ec2 group
+  ec2_group:
+    name: "{{ app_name }} Rules"
+    state: present
+    profile: "{{ aws_boto_profile }}"
+    description: an example of ansible setting up an EC2 group
+    vpc_id: "{{ vpc.vpc_id }}"
+    region: "{{ aws_region }}"
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 204.244.194.90/32
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 3306
+        to_port: 3306
+        group_name: "{{ app_name }} Rules"
+  register: security_group
+
+- name: tag the security group
+  ec2_tag:
+    state: present
+    profile: "{{ aws_boto_profile }}"
+    region: "{{ aws_region }}"
+    resource: "{{ security_group.group_id }}"
+    tags:
+      Name: "{{ app_name }} Group"
+
+- name: tag the internet gateway
+  ec2_tag:
+    state: present
+    profile: "{{ aws_boto_profile }}"
+    region: "{{ aws_region }}"
+    resource: "{{ internet_gateway.gateway_id }}"
+    tags:
+      Name: "{{ app_name }} Gateway"
+
+- name: provision server
+  ec2:
+    instance_tags:
+      Name: "{{ app_name }} Instance"
+    state: present
+    profile: "{{ aws_boto_profile }}"
+    key_name: "{{ aws_key_name }}"
+    instance_type: "{{ aws_instance_type }}"
+    region: "{{ aws_region }}"
+    image: "{{ aws_ami }}"
+    wait: yes
+    group_id: "{{ security_group.group_id }}"
+    count: 1
+    vpc_subnet_id: "{{ vpc_subnet.subnet.id }}"
+    assign_public_ip: yes
+    volumes:
+      - device_name: /dev/sda1
+        volume_type: gp2
+        volume_size: 8
+        delete_on_termination: yes
+  register: ec2
+
+- name: get the new ec2 vols
+  ec2_vol:
+    instance: "{{ ec2.instances[0].id }}"
+    state: list
+    region: "{{ aws_region }}"
+  register: ec2_volume
+
+- name: tag the volumes
+  ec2_tag:
+    resource: "{{ item.id }}"
+    region:  "{{ aws_region }}"
+    tags:
+      Name: "{{ app_name }} Volume {{ item.id }}"
+  with_items: "{{ ec2_volume.volumes | default([]) }}"
+
+# - name: add rds subnet
+#   rds_subnet_group:
+#     name: ansible-db-subnet
+#     region: "{{ aws_region }}"
+#     state: present
+#     profile: "{{ aws_boto_profile }}"
+#     description: Ansible DB subnet group
+#     subnets:
+#       - "{{ vpc_subnet.subnet.id }}"
+#       - "{{ vpc_subnet2.subnet.id }}"
+#   register: db_subnet
+#   tags:
+#     - rds
+
+# - name: create rds instance
+#   rds:
+#     command: create
+#     profile: "{{ aws_boto_profile }}"
+#     instance_name: ansible-rds
+#     db_engine: mariadb
+#     engine_version: 10.1.14
+#     size: 10
+#     instance_type: db.t2.micro
+#     vpc_security_groups:
+#       - "{{ vpc.vpc_id }}"
+#     subnet: "{{ db_subnet.subnet.id }}"
+#     region: "{{ aws_region }}"
+#     username: mysql_admin
+#     password: 1nsecure
+#     tags:
+#       Environment: testing
+#       Application: cms
+#   register: rds
+#   tags:
+#     - rds
+
+# - name: create s3 bucket
+#   s3_bucket:
+#     name: invoke-ansible-test-bucket
+#     state: present
+#     profile: "{{ aws_boto_profile }}"
+#     region: "{{ aws_region }}"
+#     policy: "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AddPerm\",\"Effect\":\"Allow\",\"Principal\": \"*\",\"Action\":[\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::invoke-ansible-test-bucket/*\"]}]}"
+#     tags:
+#       Project: ansible-test
+
+- name: save all the variables
+  template: src=templates/ec2-vars.j2 dest="{{ ec2_vars_output }}"
