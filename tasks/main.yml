@@ -111,7 +111,7 @@
         delete_on_termination: yes
   register: ec2
 
-- name: get the new ec2 vols
+- name: get the new volumes
   ec2_vol:
     instance: "{{ ec2.instances[0].id }}"
     state: list
@@ -120,6 +120,7 @@
 
 - name: tag the volumes
   ec2_tag:
+    state: present
     resource: "{{ item.id }}"
     region:  "{{ aws_region }}"
     tags:
