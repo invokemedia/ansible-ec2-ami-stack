@@ -2,7 +2,7 @@
 app_name: Ansible
 
 aws_boto_profile: default
-aws_ami: ami-0c4b8b6c
+aws_ami: ami-f4599394
 aws_key_name: james-macbook
 aws_instance_type: t2.micro
 aws_region: us-west-2
