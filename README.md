@@ -68,7 +68,6 @@ Here is how you would use the default setup setup.
   gather_facts: True
   vars:
     app_name: ProjectName STAGE
-    aws_boto_profile: projectname
   roles:
     - { role: invokemedia.ec2-lemp-stack }
 ```
