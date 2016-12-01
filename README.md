@@ -1,7 +1,7 @@
-Ansible EC2 LEMP Stack
+Ansible EC2 AMI Stack
 ======================
 
-> Ansible script to create an entire LEMP stack in AWS
+> Ansible script to create an entire EC2 HTTP stack in AWS using an existing AMI
 
 This role is meant to be run locally. So see the [example playbook](#example-playbook) for how to do that.
 
@@ -17,7 +17,7 @@ The following currently works:
 * add internet gateway to VPC
 * setup route table for VPC and Gateway
 * setup security group for HTTP, HTTPS, SSH
-* provision EC2 server with [Invoke AMI](https://github.com/invokemedia/settler-ami-provision)
+* provision EC2 server with an AMI (default [Invoke AMI](https://github.com/invokemedia/settler-ami-provision))
 
 The following _is not_ working:
 
