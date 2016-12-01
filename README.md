@@ -30,7 +30,7 @@ Installation
 * `mkdir -p server-setup/roles`
 * `cd server-setup`
 * `touch playbook.yml`
-* `git clone https://github.com/invokemedia/ansible-ec2-lemp-stack roles/invokemedia.ec2-lemp-stack`
+* `git clone https://github.com/invokemedia/ansible-ec2-ami-stack roles/invokemedia.ec2-ami-stack`
 
 Role Variables
 --------------
@@ -69,7 +69,7 @@ Here is how you would use the default setup setup.
   vars:
     app_name: ProjectName STAGE
   roles:
-    - { role: invokemedia.ec2-lemp-stack }
+    - { role: invokemedia.ec2-ami-stack }
 ```
 
 Then use `ansible-playbook playbook.yml -i 'localhost,'` to play.
