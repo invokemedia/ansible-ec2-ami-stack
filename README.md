@@ -41,7 +41,7 @@ app_name: Ansible
 # which profile to use in boto
 aws_boto_profile: default
 # the AMI to use
-aws_ami: ami-abad0ecb
+aws_ami: ami-d4902bb4
 # the key-pair to inject into the instance
 aws_key_name: user-keyname
 # instance type
