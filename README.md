@@ -88,8 +88,8 @@ MIT
 Author Information
 ------------------
 
-* [Invoke Media](http://www.invokemedia.com/)
-* <webmaster@invokemedia.com>
+* [Invoke](http://www.invokedigital.co/)
+* <webmaster@invokedigital.co>
 
 References
 ----------
