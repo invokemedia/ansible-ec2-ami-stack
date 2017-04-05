@@ -1,5 +1,8 @@
 ---
-app_name: Ansible
+app_env: stage
+app_project: invoke
+app_client: invoke
+# app_name: "{{ app_project }} {{ app_client }} {{ app_env }}"
 
 aws_boto_profile: default
 aws_ami: ami-d4902bb4
@@ -8,3 +11,8 @@ aws_instance_type: t2.micro
 aws_region: us-west-2
 
 ec2_vars_output: ./ec2-vars.yml
+
+rds_db_type: mariadb
+rds_instance_type: db.t2.micro
+
+s3_name: ansible-bucket

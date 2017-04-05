@@ -36,8 +36,10 @@ Role Variables
 --------------
 
 ```yaml
-# the name of the application. used in tags
-app_name: Ansible
+# the application details. used in tags
+app_env: stage
+app_project: website
+app_client: Invoke
 # which profile to use in boto
 aws_boto_profile: default
 # the AMI to use
@@ -67,12 +69,14 @@ Here is how you would use the default setup setup.
   connection: local
   gather_facts: True
   vars:
-    app_name: ProjectName STAGE
+    app_env: stage
+    app_project: website
+    app_client: Invoke
   roles:
     - { role: invokemedia.ec2-ami-stack }
 ```
 
-Then use `ansible-playbook playbook.yml -i 'localhost,'` to play.
+Then use `ansible-playbook playbook.yml -i 'localhost,' --skip-tags "rds,s3"` to play.
 
 This role will also create a `ec2-vars.yml` file in the root of the role. This is used so you can know what the results (ids, names, locations, ips, dns names, etc.) of all the resources are.
 
