@@ -6,6 +6,9 @@
     cidr_block: 10.0.0.0/16
     resource_tags:
       Name: "{{ app_project }} {{ app_client }} {{ app_env }} VPC"
+      Client: "{{ app_client }}"
+      project: "{{ app_project }}"
+      env: "{{ app_env }}"
     region: "{{ aws_region }}"
   register: vpc
 
@@ -19,6 +22,9 @@
     az: "{{ aws_region }}a"
     resource_tags:
       Name: "{{ app_project }} {{ app_client }} {{ app_env }} Subnet"
+      Client: "{{ app_client }}"
+      project: "{{ app_project }}"
+      env: "{{ app_env }}"
   register: vpc_subnet
 
 - name: Create DB subnet for vpc
@@ -31,6 +37,9 @@
     az: "{{ aws_region }}b"
     resource_tags:
       Name: "{{ app_project }} {{ app_client }} {{ app_env }} DB Subnet"
+      Client: "{{ app_client }}"
+      project: "{{ app_project }}"
+      env: "{{ app_env }}"
   register: vpc_subnet2
 
 - name: register internet gateway
@@ -49,6 +58,9 @@
     region: "{{ aws_region }}"
     tags:
       Name: "{{ app_project }} {{ app_client }} {{ app_env }} Router"
+      Client: "{{ app_client }}"
+      project: "{{ app_project }}"
+      env: "{{ app_env }}"
     subnets:
       - "{{ vpc_subnet.subnet.id }}"
       - "{{ vpc_subnet2.subnet.id }}"
@@ -58,7 +70,7 @@
     propagating_vgw_ids: []
   register: public_route_table
 
-- name: setup ec2 group
+- name: setup ec2 security group
   ec2_group:
     name: "{{ app_project }} {{ app_client }} {{ app_env }} Rules"
     state: present
@@ -93,6 +105,9 @@
     resource: "{{ security_group.group_id }}"
     tags:
       Name: "{{ app_project }} {{ app_client }} {{ app_env }} Group"
+      Client: "{{ app_client }}"
+      project: "{{ app_project }}"
+      env: "{{ app_env }}"
 
 - name: tag the internet gateway
   ec2_tag:
@@ -102,6 +117,9 @@
     resource: "{{ internet_gateway.gateway_id }}"
     tags:
       Name: "{{ app_project }} {{ app_client }} {{ app_env }} Gateway"
+      Client: "{{ app_client }}"
+      project: "{{ app_project }}"
+      env: "{{ app_env }}"
 
 - name: provision server
   ec2:
