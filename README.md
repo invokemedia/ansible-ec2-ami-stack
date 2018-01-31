@@ -12,23 +12,23 @@ Progress
 
 The following currently works:
 
-* create VPC
-* add subnet to VPC
-* add internet gateway to VPC
-* setup route table for VPC and Gateway
-* setup security group for HTTP, HTTPS, SSH
-* provision EC2 server with an AMI (default [Invoke AMI](https://github.com/invokemedia/settler-ami-provision))
+* Create VPC
+* Add subnet to VPC
+* Add internet gateway to VPC
+* Setup route table for VPC and Gateway
+* Setup security group for HTTP, HTTPS, SSH
+* Provision EC2 server with an AMI (default [Invoke AMI](https://github.com/invokemedia/settler-ami-provision))
 
 The following _is not_ working:
 
-* RDS setup
-* S3 setup
+* Setup RDS
+* Setup S3
 
 Installation
 ------------
 
-* `mkdir -p server-setup/roles`
-* `cd server-setup`
+* `mkdir -p ansible/roles`
+* `cd ansible`
 * `touch playbook.yml`
 * `git clone https://github.com/invokemedia/ansible-ec2-ami-stack roles/invokemedia.ec2-ami-stack`
 
@@ -36,11 +36,12 @@ Role Variables
 --------------
 
 ```yaml
-# the application details. used in tags
+# Application details. Used to tag instances
 app_env: stage
 app_project: website
 app_client: Invoke
-# which profile to use in boto
+
+# Which profile to use in boto
 aws_boto_profile: default
 # the AMI to use
 aws_ami: ami-d4902bb4

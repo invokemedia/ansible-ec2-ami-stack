@@ -4,7 +4,7 @@ app_project: invoke
 app_client: invoke
 
 aws_boto_profile: default
-aws_ami: ami-d4902bb4
+aws_ami: ami-0e3d8576
 aws_key_name: valentin
 aws_instance_type: t2.micro
 aws_region: us-west-2
