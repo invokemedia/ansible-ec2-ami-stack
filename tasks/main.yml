@@ -1,5 +1,5 @@
 ---
-- name: create vpc entry
+- name: Create VPC
   ec2_vpc:
     state: present
     profile: "{{ aws_boto_profile }}"
@@ -7,12 +7,12 @@
     resource_tags:
       Name: "{{ app_project }} {{ app_client }} {{ app_env }} VPC"
       Client: "{{ app_client }}"
-      project: "{{ app_project }}"
-      env: "{{ app_env }}"
+      Project: "{{ app_project }}"
+      Environment: "{{ app_env }}"
     region: "{{ aws_region }}"
   register: vpc
 
-- name: Create subnet for vpc
+- name: Create Subnet for VPC
   ec2_vpc_subnet:
     state: present
     profile: "{{ aws_boto_profile }}"
@@ -23,8 +23,8 @@
     resource_tags:
       Name: "{{ app_project }} {{ app_client }} {{ app_env }} Subnet"
       Client: "{{ app_client }}"
-      project: "{{ app_project }}"
-      env: "{{ app_env }}"
+      Project: "{{ app_project }}"
+      Environment: "{{ app_env }}"
   register: vpc_subnet
 
 - name: Create DB subnet for vpc
@@ -38,16 +38,21 @@
     resource_tags:
       Name: "{{ app_project }} {{ app_client }} {{ app_env }} DB Subnet"
       Client: "{{ app_client }}"
-      project: "{{ app_project }}"
-      env: "{{ app_env }}"
+      Project: "{{ app_project }}"
+      Environment: "{{ app_env }}"
   register: vpc_subnet2
 
-- name: register internet gateway
+- name: Register Internet Gateway
   ec2_vpc_igw:
     state: present
     profile: "{{ aws_boto_profile }}"
     region: "{{ aws_region }}"
     vpc_id: "{{ vpc.vpc_id }}"
+    resource_tags:
+      Name: "{{ app_project }} {{ app_client }} {{ app_env }} DB Subnet"
+      Client: "{{ app_client }}"
+      Project: "{{ app_project }}"
+      Environment: "{{ app_env }}"
   register: internet_gateway
 
 - name: Set up public subnet route table
@@ -59,8 +64,8 @@
     tags:
       Name: "{{ app_project }} {{ app_client }} {{ app_env }} Router"
       Client: "{{ app_client }}"
-      project: "{{ app_project }}"
-      env: "{{ app_env }}"
+      Project: "{{ app_project }}"
+      Environment: "{{ app_env }}"
     subnets:
       - "{{ vpc_subnet.subnet.id }}"
       - "{{ vpc_subnet2.subnet.id }}"
@@ -70,7 +75,7 @@
     propagating_vgw_ids: []
   register: public_route_table
 
-- name: setup ec2 security group
+- name: Setup EC2 Security Group
   ec2_group:
     name: "{{ app_project }} {{ app_client }} {{ app_env }} Rules"
     state: present
@@ -78,6 +83,11 @@
     description: "EC2 instance for {{ app_project }} {{ app_client }} {{ app_env }} env"
     vpc_id: "{{ vpc.vpc_id }}"
     region: "{{ aws_region }}"
+    tags:
+      Name: "{{ app_project }} {{ app_client }} {{ app_env }} Router"
+      Client: "{{ app_client }}"
+      Project: "{{ app_project }}"
+      Environment: "{{ app_env }}"
     rules:
       - proto: tcp
         from_port: 80
@@ -97,37 +107,37 @@
         group_name: "{{ app_project }} {{ app_client }} {{ app_env }} Rules"
   register: security_group
 
-- name: tag the security group
-  ec2_tag:
-    state: present
-    profile: "{{ aws_boto_profile }}"
-    region: "{{ aws_region }}"
-    resource: "{{ security_group.group_id }}"
-    tags:
-      Name: "{{ app_project }} {{ app_client }} {{ app_env }} Group"
-      Client: "{{ app_client }}"
-      project: "{{ app_project }}"
-      env: "{{ app_env }}"
+#- name: ag the security group
+#  ec2_tag:
+#    state: present
+#    profile: "{{ aws_boto_profile }}"
+#    region: "{{ aws_region }}"
+#    resource: "{{ security_group.group_id }}"
+#    tags:
+#      Name: "{{ app_project }} {{ app_client }} {{ app_env }} Group"
+#      Client: "{{ app_client }}"
+#      project: "{{ app_project }}"
+#      env: "{{ app_env }}"
 
-- name: tag the internet gateway
-  ec2_tag:
-    state: present
-    profile: "{{ aws_boto_profile }}"
-    region: "{{ aws_region }}"
-    resource: "{{ internet_gateway.gateway_id }}"
-    tags:
-      Name: "{{ app_project }} {{ app_client }} {{ app_env }} Gateway"
-      Client: "{{ app_client }}"
-      project: "{{ app_project }}"
-      env: "{{ app_env }}"
+#- name: tag the internet gateway
+#  ec2_tag:
+#    state: present
+#    profile: "{{ aws_boto_profile }}"
+#    region: "{{ aws_region }}"
+#    resource: "{{ internet_gateway.gateway_id }}"
+#    tags:
+#      Name: "{{ app_project }} {{ app_client }} {{ app_env }} Gateway"
+#      Client: "{{ app_client }}"
+#      project: "{{ app_project }}"
+#      env: "{{ app_env }}"
 
-- name: provision server
+- name: Provision server
   ec2:
     instance_tags:
       Name: "{{ app_project }} {{ app_client }} {{ app_env }} Instance"
       Client: "{{ app_client }}"
-      project: "{{ app_project }}"
-      env: "{{ app_env }}"
+      Project: "{{ app_project }}"
+      Environment: "{{ app_env }}"
     state: present
     profile: "{{ aws_boto_profile }}"
     key_name: "{{ aws_key_name }}"
@@ -146,14 +156,14 @@
         delete_on_termination: yes
   register: ec2
 
-- name: get the new volumes
+- name: Get the new volumes
   ec2_vol:
     instance: "{{ ec2.instances[0].id }}"
     state: list
     region: "{{ aws_region }}"
   register: ec2_volume
 
-- name: tag the volumes
+- name: Tag the volumes
   ec2_tag:
     resource: "{{ item.id }}"
     region:  "{{ aws_region }}"
@@ -200,7 +210,7 @@
 #   tags:
 #     - rds
 
-- name: create s3 bucket
+- name: Create S3 bucket
   s3_bucket:
     name: "{{ s3_name | regex_replace('[^a-zA-Z0-9]+', '\\1') }}"
     state: present
@@ -216,5 +226,5 @@
   tags:
     - s3
 
-- name: save all the variables
+- name: Save all the variables
   template: src=templates/ec2-vars.j2 dest="{{ ec2_vars_output }}"

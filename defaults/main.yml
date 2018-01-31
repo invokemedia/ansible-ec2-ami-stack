@@ -2,11 +2,10 @@
 app_env: stage
 app_project: invoke
 app_client: invoke
-# app_name: "{{ app_project }} {{ app_client }} {{ app_env }}"
 
 aws_boto_profile: default
 aws_ami: ami-d4902bb4
-aws_key_name: james-macbook
+aws_key_name: valentin
 aws_instance_type: t2.micro
 aws_region: us-west-2
 
